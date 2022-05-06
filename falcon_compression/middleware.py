@@ -72,8 +72,8 @@ class CompressionMiddleware:
 
         data = resp.render_body()
 
-        # If the content is very short then don't compress.
-        if len(data) < MIN_SIZE:
+        # If there is no content or it is very short then don't compress.
+        if data is None or len(data) < MIN_SIZE:
             return
 
         accept_encoding = req.get_header('Accept-Encoding')
