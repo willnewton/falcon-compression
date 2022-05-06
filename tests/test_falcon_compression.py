@@ -1,4 +1,5 @@
 import gzip
+import os
 
 import brotli
 import falcon
@@ -31,11 +32,20 @@ class SmallDataResource:
         resp.text = small_data
 
 
+test_data_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.py")
+
+
+class StreamResource:
+    def on_get(self, req, resp):
+        resp.stream = open(test_data_file, "rb")
+
+
 @pytest.fixture
 def client():
     app = falcon.App(middleware=[CompressionMiddleware()])
     app.add_route("/large_data", LargeDataResource())
     app.add_route("/small_data", SmallDataResource())
+    app.add_route("/stream", StreamResource())
     return testing.TestClient(app)
 
 
@@ -44,6 +54,7 @@ def baseline_client():
     app = falcon.App()
     app.add_route("/large_data", LargeDataResource())
     app.add_route("/small_data", SmallDataResource())
+    app.add_route("/stream", StreamResource())
     return testing.TestClient(app)
 
 
@@ -88,6 +99,28 @@ class TestCompressionMiddleware:
         assert len(result.content) < large_data_bytes
         assert result.headers["Content-Encoding"] == "br"
         assert uncompressed == large_data
+
+    def test_gzip_stream(self, client):
+        headers = {
+            "Accept-Encoding": "gzip",
+        }
+        result = client.simulate_get("/stream", headers=headers)
+        test_data = open(test_data_file, "rb").read().decode("utf-8")
+        assert len(result.content) < len(test_data)
+        assert result.headers["Content-Encoding"] == "gzip"
+        uncompressed = gzip.decompress(result.content).decode("utf-8")
+        assert uncompressed == test_data
+
+    def test_brotli_stream(self, client):
+        headers = {
+            "Accept-Encoding": "br",
+        }
+        result = client.simulate_get("/stream", headers=headers)
+        test_data = open(test_data_file, "rb").read().decode("utf-8")
+        assert len(result.content) < len(test_data)
+        assert result.headers["Content-Encoding"] == "br"
+        uncompressed = brotli.decompress(result.content).decode("utf-8")
+        assert uncompressed == test_data
 
     def test_baseline_performance(self, baseline_client, benchmark):
         def do_request():
