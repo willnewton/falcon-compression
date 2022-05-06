@@ -1,8 +1,15 @@
 [tool.poetry]
 name = "falcon-compression"
 version = "0.1.0"
-description = ""
+description = "Compression middleware for Falcon"
 authors = ["Will Newton <will.newton@gmail.com>"]
+readme = "README.md"
+license = "Apache"
+homepage = "https://github.com/willnewton/falcon-compression"
+repository = "https://github.com/willnewton/falcon-compression"
+include = [
+    "LICENSE",
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
