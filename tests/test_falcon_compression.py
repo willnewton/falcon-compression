@@ -27,6 +27,12 @@ def client():
     app.add_route('/large_data', LargeDataResource())
     return testing.TestClient(app)
 
+@pytest.fixture
+def baseline_client():
+    app = falcon.App()
+    app.add_route('/large_data', LargeDataResource())
+    return testing.TestClient(app)
+
 class TestCompressionMiddleware:
     def test_no_accept_encoding(self, client):
         result = client.simulate_get('/large_data')
@@ -56,3 +62,29 @@ class TestCompressionMiddleware:
         result = client.simulate_get('/large_data', headers=headers)
         assert len(result.content) < large_data_bytes
         assert result.headers['Content-Encoding'] == 'br' 
+
+    def test_baseline_performance(self, baseline_client, benchmark):
+        def do_request():
+            baseline_client.simulate_get('/large_data')
+        benchmark(do_request)
+
+    def test_no_accept_encoding_performance(self, client, benchmark):
+        def do_request():
+            client.simulate_get('/large_data')
+        benchmark(do_request)
+
+    def test_gzip_performance(self, client, benchmark):
+        headers = {
+            'Accept-Encoding': 'gzip',
+        }
+        def do_request():
+            client.simulate_get('/large_data', headers=headers)
+        benchmark(do_request)
+
+    def test_brotli_performance(self, client, benchmark):
+        headers = {
+            'Accept-Encoding': 'brotli',
+        }
+        def do_request():
+            client.simulate_get('/large_data', headers=headers)
+        benchmark(do_request)
