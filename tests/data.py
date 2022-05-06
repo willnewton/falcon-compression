@@ -88,3 +88,6 @@ I. THE BURIAL OF THE DEAD
   “You! hypocrite lecteur!—mon semblable,—mon frère!”
 """
 large_data_bytes = len(large_data.encode("utf-8"))
+
+small_data = "Only a small amount of data."
+small_data_bytes = len(small_data.encode("utf-8"))

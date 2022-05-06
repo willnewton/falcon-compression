@@ -4,7 +4,7 @@ from falcon import testing
 
 from falcon_compression.middleware import CompressionMiddleware, parse_q_list
 
-from .data import large_data, large_data_bytes
+from .data import large_data, large_data_bytes, small_data, small_data_bytes
 
 
 def test_parse_q_list():
@@ -23,10 +23,16 @@ class LargeDataResource:
         resp.text = large_data
 
 
+class SmallDataResource:
+    def on_get(self, req, resp):
+        resp.text = small_data
+
+
 @pytest.fixture
 def client():
     app = falcon.App(middleware=[CompressionMiddleware()])
     app.add_route("/large_data", LargeDataResource())
+    app.add_route("/small_data", SmallDataResource())
     return testing.TestClient(app)
 
 
@@ -34,6 +40,7 @@ def client():
 def baseline_client():
     app = falcon.App()
     app.add_route("/large_data", LargeDataResource())
+    app.add_route("/small_data", SmallDataResource())
     return testing.TestClient(app)
 
 
@@ -58,6 +65,14 @@ class TestCompressionMiddleware:
         result = client.simulate_get("/large_data", headers=headers)
         assert len(result.content) < large_data_bytes
         assert result.headers["Content-Encoding"] == "gzip"
+
+    def test_small_data(self, client):
+        headers = {
+            "Accept-Encoding": "gzip",
+        }
+        result = client.simulate_get("/small_data", headers=headers)
+        assert len(result.content) == small_data_bytes
+        assert "Content-Encoding" not in result.headers
 
     def test_brotli_compression(self, client):
         headers = {
