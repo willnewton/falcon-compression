@@ -66,18 +66,17 @@ class CompressionMiddleware:
                 the framework processed and routed the request;
                 otherwise False.
         """
+        accept_encoding = req.get_header('Accept-Encoding')
+        if accept_encoding is None:
+            return
+
         # If content-encoding is already set or it's a stream don't compress.
         if resp.get_header('Content-Encoding') or resp.stream: 
             return
 
         data = resp.render_body()
-
         # If there is no content or it is very short then don't compress.
         if data is None or len(data) < MIN_SIZE:
-            return
-
-        accept_encoding = req.get_header('Accept-Encoding')
-        if accept_encoding is None:
             return
 
         compressor = self._get_compressor(accept_encoding)
