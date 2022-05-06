@@ -1,5 +1,3 @@
-
-
 large_data = """
 “Nam Sibyllam quidem Cumis ego ipse oculis meis
 vidi in ampulla pendere, et cum illi pueri dicerent:
@@ -89,4 +87,4 @@ I. THE BURIAL OF THE DEAD
   “Or with his nails he’ll dig it up again!
   “You! hypocrite lecteur!—mon semblable,—mon frère!”
 """
-large_data_bytes = len(large_data.encode('utf-8'))
+large_data_bytes = len(large_data.encode("utf-8"))

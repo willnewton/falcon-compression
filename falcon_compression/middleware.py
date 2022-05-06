@@ -1,16 +1,16 @@
-
 import gzip
 
 import brotli
 
 MIN_SIZE = 200
 
+
 def parse_q_list(s):
     values = []
     for name in s.split(","):
         q = 1.0
-        if ';q=' in name:
-            name, q = name.split(';q=')[:2]
+        if ";q=" in name:
+            name, q = name.split(";q=")[:2]
             try:
                 q = float(q)
             except ValueError:
@@ -19,7 +19,7 @@ def parse_q_list(s):
                 continue
         values.append((name.strip().lower(), q))
     values.sort(key=lambda v: v[1], reverse=True)
-    return [v[0] for v in values] 
+    return [v[0] for v in values]
 
 
 class BrotliCompressor:
@@ -35,8 +35,7 @@ class GzipCompressor:
     compression_level = 6
 
     def compress(self, data):
-        return gzip.compress(data, compresslevel=self.compression_level,
-                             mtime=0)        
+        return gzip.compress(data, compresslevel=self.compression_level, mtime=0)
 
 
 class CompressionMiddleware:
@@ -66,12 +65,12 @@ class CompressionMiddleware:
                 the framework processed and routed the request;
                 otherwise False.
         """
-        accept_encoding = req.get_header('Accept-Encoding')
+        accept_encoding = req.get_header("Accept-Encoding")
         if accept_encoding is None:
             return
 
         # If content-encoding is already set or it's a stream don't compress.
-        if resp.get_header('Content-Encoding') or resp.stream: 
+        if resp.get_header("Content-Encoding") or resp.stream:
             return
 
         data = resp.render_body()
@@ -83,8 +82,8 @@ class CompressionMiddleware:
         if compressor is None:
             return
 
-        resp.set_header('Content-Encoding', compressor.encoding)
-        resp.append_header('Vary', 'Accept-Encoding')
+        resp.set_header("Content-Encoding", compressor.encoding)
+        resp.append_header("Vary", "Accept-Encoding")
 
         compressed = compressor.compress(data)
         resp.data = compressed
