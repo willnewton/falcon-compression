@@ -1,3 +1,6 @@
+import gzip
+
+import brotli
 import falcon
 import pytest
 from falcon import testing
@@ -63,8 +66,10 @@ class TestCompressionMiddleware:
             "Accept-Encoding": "deflate,gzip;q=0.8",
         }
         result = client.simulate_get("/large_data", headers=headers)
+        uncompressed = gzip.decompress(result.content).decode("utf-8")
         assert len(result.content) < large_data_bytes
         assert result.headers["Content-Encoding"] == "gzip"
+        assert uncompressed == large_data
 
     def test_small_data(self, client):
         headers = {
@@ -79,8 +84,10 @@ class TestCompressionMiddleware:
             "Accept-Encoding": "br,gzip",
         }
         result = client.simulate_get("/large_data", headers=headers)
+        uncompressed = brotli.decompress(result.content).decode("utf-8")
         assert len(result.content) < large_data_bytes
         assert result.headers["Content-Encoding"] == "br"
+        assert uncompressed == large_data
 
     def test_baseline_performance(self, baseline_client, benchmark):
         def do_request():
