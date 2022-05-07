@@ -23,16 +23,18 @@ def parse_q_list(s):
 
 class CompressionMiddleware:
     def __init__(self):
-        self._compressors = [
-            GzipCompressor(),
-            BrotliCompressor(),
-        ]
+        self._compressors = {}
+        self._add_compressor(GzipCompressor())
+        self._add_compressor(BrotliCompressor())
+
+    def _add_compressor(self, compressor):
+        self._compressors[compressor.encoding] = compressor
 
     def _get_compressor(self, accept_encoding):
         for encoding in parse_q_list(accept_encoding):
-            for compressor in self._compressors:
-                if encoding == compressor.encoding:
-                    return compressor
+            compressor = self._compressors.get(encoding)
+            if compressor:
+                return compressor
         return None
 
     def process_response(self, req, resp, resource, req_succeeded):
