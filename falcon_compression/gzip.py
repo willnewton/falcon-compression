@@ -5,6 +5,7 @@ from .util import StreamingBuffer, wrap_file
 
 class GzipCompressor:
     encoding = "gzip"
+    priority = 2
     compression_level = 6
 
     def compress(self, data):

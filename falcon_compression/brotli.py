@@ -5,6 +5,7 @@ from .util import wrap_file
 
 class BrotliCompressor:
     encoding = "br"
+    priority = 1
     compression_level = 4
 
     def compress(self, data):

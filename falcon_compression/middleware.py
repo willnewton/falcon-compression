@@ -4,7 +4,7 @@ from .gzip import GzipCompressor
 MIN_SIZE = 200
 
 
-def parse_q_list(s):
+def parse_q_list(s, priorities):
     values = []
     for name in s.split(","):
         q = 1.0
@@ -16,22 +16,27 @@ def parse_q_list(s):
                 q = 0.0
             if q == 0.0:
                 continue
-        values.append((name.strip().lower(), q))
-    values.sort(key=lambda v: v[1], reverse=True)
+        encoding = name.strip().lower()
+        if encoding in priorities:
+            values.append((encoding, priorities[encoding], q))
+    values.sort(key=lambda v: v[1])
+    values.sort(key=lambda v: v[2], reverse=True)
     return [v[0] for v in values]
 
 
 class CompressionMiddleware:
     def __init__(self):
         self._compressors = {}
+        self._priorities = {}
         self._add_compressor(GzipCompressor())
         self._add_compressor(BrotliCompressor())
 
     def _add_compressor(self, compressor):
+        self._priorities[compressor.encoding] = compressor.priority
         self._compressors[compressor.encoding] = compressor
 
     def _get_compressor(self, accept_encoding):
-        for encoding in parse_q_list(accept_encoding):
+        for encoding in parse_q_list(accept_encoding, self._priorities):
             compressor = self._compressors.get(encoding)
             if compressor:
                 return compressor

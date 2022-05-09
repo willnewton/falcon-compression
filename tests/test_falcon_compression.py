@@ -12,14 +12,22 @@ from .data import large_data, large_data_bytes, small_data, small_data_bytes
 
 
 def test_parse_q_list():
+    priorities = {
+        "br": 1,
+        "gzip": 2,
+    }
     s = "br"
-    assert parse_q_list(s) == ["br"]
+    assert parse_q_list(s, priorities) == ["br"]
     s = " br, gzip "
-    assert parse_q_list(s) == ["br", "gzip"]
+    assert parse_q_list(s, priorities) == ["br", "gzip"]
     s = " br, gzip;q=0.8,zstd;q=0.9 "
-    assert parse_q_list(s) == ["br", "zstd", "gzip"]
-    s = "gzip;q=0.0 , zstd"
-    assert parse_q_list(s) == ["zstd"]
+    assert parse_q_list(s, priorities) == ["br", "gzip"]
+    s = "gzip;q=0.0 , br"
+    assert parse_q_list(s, priorities) == ["br"]
+    s = "gzip,br"
+    assert parse_q_list(s, priorities) == ["br", "gzip"]
+    s = "gzip,br;q=0.9"
+    assert parse_q_list(s, priorities) == ["gzip", "br"]
 
 
 class LargeDataResource:
@@ -99,6 +107,13 @@ class TestCompressionMiddleware:
         assert len(result.content) < large_data_bytes
         assert result.headers["Content-Encoding"] == "br"
         assert uncompressed == large_data
+
+    def test_prefer_brotli(self, client):
+        headers = {
+            "Accept-Encoding": "gzip,deflate,br",
+        }
+        result = client.simulate_get("/large_data", headers=headers)
+        assert result.headers["Content-Encoding"] == "br"
 
     def test_gzip_stream(self, client):
         headers = {
