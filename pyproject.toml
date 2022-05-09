@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "falcon-compression"
-version = "0.2.0"
+version = "0.2.1"
 description = "Compression middleware for Falcon"
 authors = ["Will Newton <will.newton@gmail.com>"]
 readme = "README.md"
