@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "falcon-compression"
-version = "0.2.1"
+version = "0.2.2"
 description = "Compression middleware for Falcon"
 authors = ["Will Newton <will.newton@gmail.com>"]
 readme = "README.md"
@@ -15,10 +15,10 @@ include = [
 python = "^3.9"
 Brotli = "^1.0.9"
 
-[tool.poetry.dev-dependencies]
-pytest = "^7.2"
-falcon = "^3.1.0"
-pytest-benchmark = "^3.4.1"
+[tool.poetry.group.test.dependencies]
+pytest = "^8.0"
+falcon = "^4.4.0"
+pytest-benchmark = "^5.2.0"
 pytest-cov = "^3.0.0"
 
 [build-system]
